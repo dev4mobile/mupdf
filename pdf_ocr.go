@@ -5,17 +5,14 @@ package docconv
 import (
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/gen2brain/go-fitz"
 )
 
-var (
-	exts = []string{".jpg", ".tif", ".tiff", ".png", ".pbm"}
-)
+var exts = []string{".jpg", ".tif", ".tiff", ".png", ".pbm"}
 
 func compareExt(ext string, exts []string) bool {
 	for _, e := range exts {
@@ -29,70 +26,40 @@ func compareExt(ext string, exts []string) bool {
 func ConvertPDFImages(path string) (BodyResult, error) {
 	bodyResult := BodyResult{}
 
-	tmp, err := os.MkdirTemp(os.TempDir(), "tmp-imgs-")
+	// 打开PDF文档
+	doc, err := fitz.New(path)
 	if err != nil {
-		bodyResult.err = err
-		return bodyResult, err
+		return bodyResult, fmt.Errorf("error opening PDF: %v", err)
 	}
-	tmpDir := fmt.Sprintf("%s/", tmp)
-
-	defer func() {
-		_ = os.RemoveAll(tmpDir) // ignore error
-	}()
-
-	_, err = exec.Command("pdfimages", "-j", path, tmpDir).Output()
-	if err != nil {
-		return bodyResult, err
-	}
-
-	filePaths := []string{}
-
-	walkFunc := func(path string, info os.FileInfo, err error) error {
-		path, err = filepath.Abs(path)
-		if err != nil {
-			return err
-		}
-
-		if compareExt(filepath.Ext(path), exts) {
-			filePaths = append(filePaths, path)
-		}
-		return nil
-	}
-	filepath.Walk(tmpDir, walkFunc)
-
-	fileLength := len(filePaths)
-
-	if fileLength < 1 {
-		return bodyResult, nil
-	}
+	defer doc.Close()
 
 	var wg sync.WaitGroup
+	pageCount := doc.NumPage()
+	data := make(chan string, pageCount)
+	wg.Add(pageCount)
 
-	data := make(chan string, fileLength)
-
-	wg.Add(fileLength)
-
-	for _, p := range filePaths {
-		go func(pathFile string) {
+	// 遍历每一页提取图片
+	for i := 0; i < pageCount; i++ {
+		go func(pageNum int) {
 			defer wg.Done()
-			f, err := os.Open(pathFile)
+
+			// 获取页面图片
+			img, err := doc.Image(pageNum)
 			if err != nil {
 				return
 			}
 
-			defer f.Close()
-			out, _, err := ConvertImage(f)
+			// 转换图片为文本
+			out, _, err := ConvertImage(img)
 			if err != nil {
 				return
 			}
 
 			data <- out
-
-		}(p)
+		}(i)
 	}
 
 	wg.Wait()
-
 	close(data)
 
 	for str := range data {
@@ -104,15 +71,28 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 
 // PdfHasImage verify if `path` (PDF) has images
 func PDFHasImage(path string) (bool, error) {
-	cmd := "pdffonts -l 5 %s | tail -n +3 | cut -d' ' -f1 | sort | uniq"
-	out, err := exec.Command("bash", "-c", fmt.Sprintf(cmd, shellEscape(path))).CombinedOutput()
-
+	doc, err := fitz.New(path)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error opening PDF: %v", err)
 	}
-	if string(out) == "" {
-		return true, nil
+	defer doc.Close()
+
+	// 检查前5页
+	maxPages := 5
+	if doc.NumPage() < maxPages {
+		maxPages = doc.NumPage()
 	}
+
+	for i := 0; i < maxPages; i++ {
+		images, err := doc.PageImageList(i)
+		if err != nil {
+			continue
+		}
+		if len(images) > 0 {
+			return true, nil
+		}
+	}
+
 	return false, nil
 }
 
@@ -123,37 +103,45 @@ func ConvertPDF(r io.Reader) (string, map[string]string, error) {
 	}
 	defer f.Done()
 
-	bodyResult, metaResult, textConvertErr := ConvertPDFText(f.Name())
-	if textConvertErr != nil {
-		return "", nil, textConvertErr
+	// 打开PDF文档
+	doc, err := fitz.New(f.Name())
+	if err != nil {
+		return "", nil, fmt.Errorf("error opening PDF: %v", err)
 	}
-	if bodyResult.err != nil {
-		return "", nil, bodyResult.err
-	}
-	if metaResult.err != nil {
-		return "", nil, metaResult.err
+	defer doc.Close()
+
+	// 提取文本
+	var bodyText strings.Builder
+	for n := 0; n < doc.NumPage(); n++ {
+		text, err := doc.Text(n)
+		if err != nil {
+			continue
+		}
+		bodyText.WriteString(text)
+		bodyText.WriteString(" ")
 	}
 
+	// 检查是否包含图片
 	hasImage, err := PDFHasImage(f.Name())
 	if err != nil {
-		return "", nil, fmt.Errorf("could not check if PDF has image: %w", err)
-	}
-	if !hasImage {
-		return bodyResult.body, metaResult.meta, nil
+		return bodyText.String(), nil, fmt.Errorf("could not check if PDF has image: %w", err)
 	}
 
+	if !hasImage {
+		return bodyText.String(), nil, nil
+	}
+
+	// 处理图片
 	imageConvertResult, imageConvertErr := ConvertPDFImages(f.Name())
 	if imageConvertErr != nil {
-		return bodyResult.body, metaResult.meta, nil // ignore error, return what we have
+		return bodyText.String(), nil, nil // ignore error, return what we have
 	}
 	if imageConvertResult.err != nil {
-		return bodyResult.body, metaResult.meta, nil // ignore error, return what we have
+		return bodyText.String(), nil, nil // ignore error, return what we have
 	}
 
-	fullBody := strings.Join([]string{bodyResult.body, imageConvertResult.body}, " ")
-
-	return fullBody, metaResult.meta, nil
-
+	fullBody := strings.Join([]string{bodyText.String(), imageConvertResult.body}, " ")
+	return fullBody, nil, nil
 }
 
 var shellEscapePattern *regexp.Regexp
