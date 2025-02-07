@@ -11,8 +11,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	TSP "github.com/Servicewall/docconv/v2/iWork"
-	"github.com/Servicewall/docconv/v2/snappy"
+	TSP "github.com/dev4mobile/mupdf/v2/iWork"
+	"github.com/dev4mobile/mupdf/v2/snappy"
 )
 
 // ConvertPages converts a Pages file to text.

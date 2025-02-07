@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Servicewall/docconv/v2"
+	docconv "github.com/dev4mobile/mupdf/v2"
 )
 
 func TestConvertXlsx(t *testing.T) {

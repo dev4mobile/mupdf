@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Servicewall/docconv/v2/client"
+	"github.com/dev4mobile/mupdf/v2/client"
 )
 
 var (
