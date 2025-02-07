@@ -25,9 +25,9 @@
 
 # docconv
 
-[![Go reference](https://pkg.go.dev/badge/github.com/dev4mobile/mupdf/v2.svg)](https://pkg.go.dev/github.com/dev4mobile/mupdf/v2)
+[![Go reference](https://pkg.go.dev/badge/github.com/Servicewall/docconv/v2.svg)](https://pkg.go.dev/github.com/Servicewall/docconv/v2)
 [![Build status](https://github.com/sajari/docconv/workflows/Go/badge.svg?branch=master)](https://github.com/sajari/docconv/actions)
-[![Report card](https://goreportcard.com/badge/github.com/dev4mobile/mupdf/v2)](https://goreportcard.com/report/github.com/dev4mobile/mupdf/v2)
+[![Report card](https://goreportcard.com/badge/github.com/Servicewall/docconv/v2)](https://goreportcard.com/report/github.com/Servicewall/docconv/v2)
 [![Sourcegraph](https://sourcegraph.com/github.com/sajari/docconv/v2/-/badge.svg)](https://sourcegraph.com/github.com/sajari/docconv/v2)
 
 A Go wrapper library to convert PDF, DOC, DOCX, XML, HTML, RTF, ODT, Pages documents and images (see optional dependencies below) to plain text.
@@ -39,7 +39,7 @@ If you haven't setup Go before, you first need to [install Go](https://golang.or
 To fetch and build the code:
 
 ```console
-$ go install github.com/dev4mobile/mupdf/v2/docd@latest
+$ go install github.com/Servicewall/docconv/v2/docd@latest
 ```
 
 See `go help install` for details on the installation location of the installed `docd` executable. Make sure that the full path to the executable is in your `PATH` environment variable.
@@ -73,7 +73,7 @@ To add image support to the `docconv` library you first need to [install and bui
 Now you can add `-tags ocr` to any `go` command when building/fetching/testing `docconv` to include support for processing images:
 
 ```console
-$ go get -tags ocr github.com/dev4mobile/mupdf/v2/...
+$ go get -tags ocr github.com/Servicewall/docconv/v2/...
 ```
 
 This may complain on macOS, which you can fix by installing [tesseract](https://tesseract-ocr.github.io) via brew:
@@ -144,7 +144,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/dev4mobile/mupdf/v2"
+	"github.com/Servicewall/docconv/v2"
 )
 
 func main() {
@@ -164,7 +164,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/dev4mobile/mupdf/v2/client"
+	"github.com/Servicewall/docconv/v2/client"
 )
 
 func main() {

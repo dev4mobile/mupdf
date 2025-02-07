@@ -1,4 +1,4 @@
-package docconv // import "github.com/dev4mobile/mupdf/v2"
+package docconv // import "github.com/Servicewall/docconv/v2"
 
 import (
 	"bytes"
