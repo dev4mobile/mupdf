@@ -1,4 +1,4 @@
-module github.com/Servicewall/docconv/v2
+module github.com/dev4mobile/mupdf/v2
 
 go 1.23
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Servicewall/docconv/v2"
+	"github.com/dev4mobile/mupdf/v2"
 )
 
 func TestConvertPptx(t *testing.T) {
