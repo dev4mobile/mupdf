@@ -3,7 +3,9 @@
 package docconv
 
 import (
+	"bytes"
 	"fmt"
+	"image/png"
 	"io"
 	"regexp"
 	"strings"
@@ -49,8 +51,15 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 				return
 			}
 
+			// 将 image.RGBA 转换为 bytes buffer
+			var buf bytes.Buffer
+			err = png.Encode(&buf, img)
+			if err != nil {
+				return
+			}
+
 			// 转换图片为文本
-			out, _, err := ConvertImage(img)
+			out, _, err := ConvertImage(&buf)
 			if err != nil {
 				return
 			}
@@ -71,29 +80,30 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 
 // PdfHasImage verify if `path` (PDF) has images
 func PDFHasImage(path string) (bool, error) {
-	doc, err := fitz.New(path)
-	if err != nil {
-		return false, fmt.Errorf("error opening PDF: %v", err)
-	}
-	defer doc.Close()
+    doc, err := fitz.New(path)
+    if err != nil {
+        return false, fmt.Errorf("error opening PDF: %v", err)
+    }
+    defer doc.Close()
 
-	// 检查前5页
-	maxPages := 5
-	if doc.NumPage() < maxPages {
-		maxPages = doc.NumPage()
-	}
+    // 检查前5页
+    maxPages := 5
+    if doc.NumPage() < maxPages {
+        maxPages = doc.NumPage()
+    }
 
-	for i := 0; i < maxPages; i++ {
-		images, err := doc.PageImageList(i)
-		if err != nil {
-			continue
-		}
-		if len(images) > 0 {
-			return true, nil
-		}
-	}
+    for i := 0; i < maxPages; i++ {
+        // 尝试获取页面图片，如果能获取到就说明有图片
+        img, err := doc.Image(i)
+        if err != nil {
+            continue
+        }
+        if img != nil {
+            return true, nil
+        }
+    }
 
-	return false, nil
+    return false, nil
 }
 
 func ConvertPDF(r io.Reader) (string, map[string]string, error) {
@@ -134,9 +144,6 @@ func ConvertPDF(r io.Reader) (string, map[string]string, error) {
 	// 处理图片
 	imageConvertResult, imageConvertErr := ConvertPDFImages(f.Name())
 	if imageConvertErr != nil {
-		return bodyText.String(), nil, nil // ignore error, return what we have
-	}
-	if imageConvertResult.err != nil {
 		return bodyText.String(), nil, nil // ignore error, return what we have
 	}
 
