@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 
 	"github.com/sergeilem/xls"
@@ -13,6 +14,7 @@ import (
 func ConvertXls(r io.Reader) (string, map[string]string, error) {
 	// Convert io.Reader to io.ReadSeeker
 	data, err := io.ReadAll(r)
+	slog.Info("xls==>", len(data))
 	if err != nil {
 		return "", nil, err
 	}

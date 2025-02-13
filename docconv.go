@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -77,45 +78,58 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 	var err error
 	switch mimeType {
 	case "application/msword", "application/vnd.ms-word":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertDoc(r)
 
 	case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertDocx(r)
 
 	case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertPptx(r)
 
 	case "application/vnd.ms-excel":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertXls(r)
 
 	case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertXlsx(r)
 
 	case "application/vnd.oasis.opendocument.text":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertODT(r)
 
 	case "application/vnd.apple.pages", "application/x-iwork-pages-sffpages":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertPages(r)
 
 	case "application/pdf":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertPDF(r)
 
 	case "application/rtf", "application/x-rtf", "text/rtf", "text/richtext":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertRTF(r)
 
 	case "text/html":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertHTML(r, readability)
 
 	case "text/url":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertURL(r, readability)
 
 	case "text/xml", "application/xml":
 		body, meta, err = ConvertXML(r)
 
 	case "image/jpeg", "image/png", "image/tif", "image/tiff":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertImage(r)
 
 	case "application/zip":
+		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertZip(r)
 
 	case "text/plain":
@@ -128,6 +142,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 		b, _ := io.ReadAll(r)
 		if detect := http.DetectContentType(b); mimeType != detect {
 			// recursive call convert once
+			slog.Warn("==>detect:", "mimeType", detect, "mimeType", mimeType)
 			return Convert(bytes.NewReader(b), detect, readability)
 		}
 	}
