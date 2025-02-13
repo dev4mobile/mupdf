@@ -147,7 +147,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 		// 	return Convert(bytes.NewReader(b), detect, readability)
 		// }
 		b, _ := io.ReadAll(r)
-		slog.Warn("==>default", "mimeType", mimeType, "size=", len(b))
+		slog.Warn("==>default", "mimeType", mimeType, "size=", len(b), "detect=", http.DetectContentType(b))
 		return nil, fmt.Errorf("unsupported mimeType: %s, %s", mimeType, http.DetectContentType(b))
 	}
 
