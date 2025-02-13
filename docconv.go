@@ -1,7 +1,6 @@
 package docconv // import "github.com/dev4mobile/mupdf/v2"
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -89,9 +88,9 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 		slog.Warn("==>", mimeType)
 		body, meta, err = ConvertPptx(r)
 
-	// case "application/vnd.ms-excel":
-	// 	slog.Warn("==>", mimeType)
-	// 	body, meta, err = ConvertXls(r)
+	case "application/vnd.ms-excel":
+		slog.Warn("==>", mimeType)
+		body, meta, err = ConvertXls(r)
 
 	case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
 		slog.Warn("==>", mimeType)
@@ -140,12 +139,14 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	default:
 		// auto-detection from first 512 bytes
+		// b, _ := io.ReadAll(r)
+		// if detect := http.DetectContentType(b); mimeType != detect {
+		// 	// recursive call convert once
+		// 	slog.Warn("==>detect:", "mimeType", detect, "mimeType", mimeType)
+		// 	return Convert(bytes.NewReader(b), detect, readability)
+		// }
 		b, _ := io.ReadAll(r)
-		if detect := http.DetectContentType(b); mimeType != detect {
-			// recursive call convert once
-			slog.Warn("==>detect:", "mimeType", detect, "mimeType", mimeType)
-			return Convert(bytes.NewReader(b), detect, readability)
-		}
+		return nil, fmt.Errorf("unsupported mimeType: %s, %s", mimeType, http.DetectContentType(b))
 	}
 
 	if err != nil {
