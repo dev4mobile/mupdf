@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image/png"
 	"io"
+	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
@@ -80,30 +81,30 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 
 // PdfHasImage verify if `path` (PDF) has images
 func PDFHasImage(path string) (bool, error) {
-    doc, err := fitz.New(path)
-    if err != nil {
-        return false, fmt.Errorf("error opening PDF: %v", err)
-    }
-    defer doc.Close()
+	doc, err := fitz.New(path)
+	if err != nil {
+		return false, fmt.Errorf("error opening PDF: %v", err)
+	}
+	defer doc.Close()
 
-    // 检查前5页
-    maxPages := 5
-    if doc.NumPage() < maxPages {
-        maxPages = doc.NumPage()
-    }
+	// 检查前5页
+	maxPages := 5
+	if doc.NumPage() < maxPages {
+		maxPages = doc.NumPage()
+	}
 
-    for i := 0; i < maxPages; i++ {
-        // 尝试获取页面图片，如果能获取到就说明有图片
-        img, err := doc.Image(i)
-        if err != nil {
-            continue
-        }
-        if img != nil {
-            return true, nil
-        }
-    }
+	for i := 0; i < maxPages; i++ {
+		// 尝试获取页面图片，如果能获取到就说明有图片
+		img, err := doc.Image(i)
+		if err != nil {
+			continue
+		}
+		if img != nil {
+			return true, nil
+		}
+	}
 
-    return false, nil
+	return false, nil
 }
 
 func ConvertPDF(r io.Reader) (string, map[string]string, error) {
