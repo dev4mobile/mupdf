@@ -1,6 +1,7 @@
 package docconv // import "github.com/dev4mobile/mupdf/v2"
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -140,15 +141,12 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	default:
 		// auto-detection from first 512 bytes
-		// b, _ := io.ReadAll(r)
-		// if detect := http.DetectContentType(b); mimeType != detect {
-		// 	// recursive call convert once
-		// 	slog.Warn("==>detect:", "mimeType", detect, "mimeType", mimeType)
-		// 	return Convert(bytes.NewReader(b), detect, readability)
-		// }
 		b, _ := io.ReadAll(r)
-		slog.Warn("==>default", "mimeType", mimeType, "size=", len(b), "detect=", http.DetectContentType(b))
-		return nil, fmt.Errorf("unsupported mimeType: %s, %s", mimeType, http.DetectContentType(b))
+		if detect := http.DetectContentType(b); mimeType != detect {
+			// recursive call convert once
+			slog.Warn("==>detect:", "mimeType", detect, "detectMimeType", mimeType)
+			return Convert(bytes.NewReader(b), detect, readability)
+		}
 	}
 
 	if err != nil {
