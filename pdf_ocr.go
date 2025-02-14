@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"image/png"
 	"io"
-	"log/slog"
 	"regexp"
 	"strings"
 	"sync"
@@ -36,76 +35,75 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 	}
 	defer doc.Close()
 
-	// var wg sync.WaitGroup
+	var wg sync.WaitGroup
 	pageCount := doc.NumPage()
 	data := make(chan string, pageCount)
-	// wg.Add(pageCount)
+	wg.Add(pageCount)
 
 	// 遍历每一页提取图片
 	for i := 0; i < pageCount; i++ {
-		// go func(pageNum int) {
-		// 	defer wg.Done()
+		go func(pageNum int) {
+			defer wg.Done()
 
-			
+			// 获取页面图片
+			img, err := doc.Image(pageNum)
+			if err != nil {
+				return
+			}
 
-		// 	data <- out
-		// }(i)
-		// 获取页面图片
-		img, err := doc.Image(pageNum)
-		if err != nil {
-			return
-		}
+			// 将 image.RGBA 转换为 bytes buffer
+			var buf bytes.Buffer
+			err = png.Encode(&buf, img)
+			if err != nil {
+				return
+			}
 
-		// 将 image.RGBA 转换为 bytes buffer
-		var buf bytes.Buffer
-		err = png.Encode(&buf, img)
-		if err != nil {
-			return
-		}
+			// 转换图片为文本
+			out, _, err := ConvertImage(&buf)
+			if err != nil {
+				return
+			}
 
-		// 转换图片为文本
-		out, _, err := ConvertImage(&buf)
-		if err != nil {
-			return
-		}
-		bodyResult.body += str + " "
+			data <- out
+		}(i)
 	}
 
-	// wg.Wait()
-	// close(data)
-	// for str := range data {
-	
-	// }
+	wg.Wait()
+	close(data)
+
+	for str := range data {
+		bodyResult.body += str + " "
+	}
 
 	return bodyResult, nil
 }
 
 // PdfHasImage verify if `path` (PDF) has images
 func PDFHasImage(path string) (bool, error) {
-	doc, err := fitz.New(path)
-	if err != nil {
-		return false, fmt.Errorf("error opening PDF: %v", err)
-	}
-	defer doc.Close()
+    doc, err := fitz.New(path)
+    if err != nil {
+        return false, fmt.Errorf("error opening PDF: %v", err)
+    }
+    defer doc.Close()
 
-	// 检查前5页
-	maxPages := 5
-	if doc.NumPage() < maxPages {
-		maxPages = doc.NumPage()
-	}
+    // 检查前5页
+    maxPages := 5
+    if doc.NumPage() < maxPages {
+        maxPages = doc.NumPage()
+    }
 
-	for i := 0; i < maxPages; i++ {
-		// 尝试获取页面图片，如果能获取到就说明有图片
-		img, err := doc.Image(i)
-		if err != nil {
-			continue
-		}
-		if img != nil {
-			return true, nil
-		}
-	}
+    for i := 0; i < maxPages; i++ {
+        // 尝试获取页面图片，如果能获取到就说明有图片
+        img, err := doc.Image(i)
+        if err != nil {
+            continue
+        }
+        if img != nil {
+            return true, nil
+        }
+    }
 
-	return false, nil
+    return false, nil
 }
 
 func ConvertPDF(r io.Reader) (string, map[string]string, error) {
@@ -139,8 +137,6 @@ func ConvertPDF(r io.Reader) (string, map[string]string, error) {
 		return bodyText.String(), nil, fmt.Errorf("could not check if PDF has image: %w", err)
 	}
 
-	slog.Warn("==>ConvertPDF", "hasImage", hasImage)
-
 	if !hasImage {
 		return bodyText.String(), nil, nil
 	}
@@ -151,7 +147,7 @@ func ConvertPDF(r io.Reader) (string, map[string]string, error) {
 		return bodyText.String(), nil, nil // ignore error, return what we have
 	}
 
-	fullBody := strings.Join([]string{bodyText.String(), ""}, " ")
+	fullBody := strings.Join([]string{bodyText.String(), imageConvertResult.body}, " ")
 	return fullBody, nil, nil
 }
 
