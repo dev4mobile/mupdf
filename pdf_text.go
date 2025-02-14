@@ -2,6 +2,7 @@ package docconv
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/gen2brain/go-fitz"
@@ -20,6 +21,7 @@ type MetaResult struct {
 // ConvertPDFText 使用 go-fitz 库对 PDF 进行解析，提取所有页面的文本内容，并返回 PDF 内容和元数据。
 func ConvertPDFText(path string) (BodyResult, MetaResult, error) {
 	// 打开 PDF 文件
+	slog.Warn("==>ConvertPDFText", "path", path)
 	doc, err := fitz.New(path)
 	if err != nil {
 		return BodyResult{}, MetaResult{}, fmt.Errorf("无法打开 PDF 文件: %v", err)
@@ -43,6 +45,8 @@ func ConvertPDFText(path string) (BodyResult, MetaResult, error) {
 			"num_pages": fmt.Sprintf("%d", doc.NumPage()),
 		},
 	}
+
+	slog.Warn("==>ConvertPDFText", "builder.String()", builder.String())
 
 	body := BodyResult{
 		body: builder.String(),

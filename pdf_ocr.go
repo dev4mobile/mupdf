@@ -37,7 +37,7 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 
 	var wg sync.WaitGroup
 	pageCount := doc.NumPage()
-	data := make(chan string, pageCount)
+	// data := make(chan string, pageCount)
 	wg.Add(pageCount)
 
 	// 遍历每一页提取图片
@@ -137,17 +137,19 @@ func ConvertPDF(r io.Reader) (string, map[string]string, error) {
 		return bodyText.String(), nil, fmt.Errorf("could not check if PDF has image: %w", err)
 	}
 
+	slog.Warn("==>ConvertPDF", "hasImage", hasImage)
+
 	if !hasImage {
 		return bodyText.String(), nil, nil
 	}
 
 	// 处理图片
-	imageConvertResult, imageConvertErr := ConvertPDFImages(f.Name())
-	if imageConvertErr != nil {
-		return bodyText.String(), nil, nil // ignore error, return what we have
-	}
+	// imageConvertResult, imageConvertErr := ConvertPDFImages(f.Name())
+	// if imageConvertErr != nil {
+	// 	return bodyText.String(), nil, nil // ignore error, return what we have
+	// }
 
-	fullBody := strings.Join([]string{bodyText.String(), imageConvertResult.body}, " ")
+	fullBody := strings.Join([]string{bodyText.String(), ""}, " ")
 	return fullBody, nil, nil
 }
 
