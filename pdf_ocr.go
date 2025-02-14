@@ -38,7 +38,7 @@ func ConvertPDFImages(path string) (BodyResult, error) {
 
 	var wg sync.WaitGroup
 	pageCount := doc.NumPage()
-	// data := make(chan string, pageCount)
+	data := make(chan string, pageCount)
 	wg.Add(pageCount)
 
 	// 遍历每一页提取图片
