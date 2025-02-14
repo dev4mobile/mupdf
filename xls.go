@@ -14,7 +14,7 @@ import (
 func ConvertXls(r io.Reader) (string, map[string]string, error) {
 	// Convert io.Reader to io.ReadSeeker
 	data, err := io.ReadAll(r)
-	slog.Info("xls==>", len(data))
+	slog.Info("xls==>", "size=", len(data))
 	if err != nil {
 		return "", nil, err
 	}
