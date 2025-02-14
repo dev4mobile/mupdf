@@ -106,7 +106,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	case "application/pdf":
 		slog.Warn("==>application/pdf", "mimeType", mimeType)
-		// body, meta, err = ConvertPDF(r)
+		body, meta, err = ConvertPDF(r)
 
 	case "application/rtf", "application/x-rtf", "text/rtf", "text/richtext":
 		slog.Warn("==>application/rtf", "mimeType", mimeType)
