@@ -79,11 +79,11 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 	switch mimeType {
 	case "application/msword", "application/vnd.ms-word":
 		slog.Warn("==>application/msword", "mimeType", mimeType)
-		// body, meta, err = ConvertDoc(r)
+		body, meta, err = ConvertDoc(r)
 
 	case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
 		slog.Warn("==>application/vnd.openxmlformats-officedocument.wordprocessingml.document", "mimeType", mimeType)
-		body, meta, err = ConvertDocx(r)
+		// body, meta, err = ConvertDocx(r)
 
 	case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
 		slog.Warn("==>application/vnd.openxmlformats-officedocument.presentationml.presentation", "mimeType", mimeType)
