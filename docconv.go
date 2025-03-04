@@ -83,7 +83,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
 		slog.Warn("==>application/vnd.openxmlformats-officedocument.wordprocessingml.document", "mimeType", mimeType)
-		// body, meta, err = ConvertDocx(r)
+		body, meta, err = ConvertDocx(r)
 
 	case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
 		slog.Warn("==>application/vnd.openxmlformats-officedocument.presentationml.presentation", "mimeType", mimeType)
@@ -91,7 +91,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	case "application/vnd.ms-excel":
 		slog.Warn("==>application/vnd.ms-excel", "mimeType", mimeType)
-		// body, meta, err = ConvertXls(r)
+		body, meta, err = ConvertXls(r)
 
 	case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
 		slog.Warn("==>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "mimeType", mimeType)
@@ -131,7 +131,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	case "application/zip":
 		slog.Warn("==>application/zip", "mimeType", mimeType)
-		body, meta, err = ConvertZip(r)
+		// body, meta, err = ConvertZip(r)
 
 	case "text/plain":
 		var b []byte
