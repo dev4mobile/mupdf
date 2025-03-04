@@ -21,13 +21,15 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 	// iterate files and extract text
 	for e := a.Entry(); e == nil; e = a.Entry() {
 		if data, err := a.ReadAll(); err == nil {
-			slog.Warn("==>a.Name(), size=%d", "name", a.Name(), "size", len(data))
+			slog.Warn("convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
 				text += a.Name() + "\r\n" + res.Body + "\r\n"
 				meta = res.Meta
+			} else {
+				slog.Warn("convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
 			}
 		}
 	}
-
+	slog.Warn("convert zip", "text", text, "meta", meta)
 	return text, meta, nil
 }
