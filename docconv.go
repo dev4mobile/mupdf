@@ -144,7 +144,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 		b, _ := io.ReadAll(r)
 		if detect := http.DetectContentType(b); mimeType != detect {
 			// recursive call convert once
-			slog.Warn("==>detect:", "mimeType", detect, "detectMimeType", mimeType)
+			slog.Warn("==>detect:", "mimeType", detect, "detectMimeType", mimeType, "size", len(b))
 			return Convert(bytes.NewReader(b), detect, readability)
 		}
 	}
