@@ -2,8 +2,10 @@ package docconv
 
 import (
 	"bytes"
-	"github.com/gen2brain/go-unarr"
 	"io"
+	"log/slog"
+
+	"github.com/gen2brain/go-unarr"
 )
 
 // ConvertZip converts an archive file to text.
@@ -19,6 +21,7 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 	// iterate files and extract text
 	for e := a.Entry(); e == nil; e = a.Entry() {
 		if data, err := a.ReadAll(); err == nil {
+			slog.Warn("==>a.Name(), size=%d", "name", a.Name(), "size", len(data))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
 				text += a.Name() + "\r\n" + res.Body + "\r\n"
 				meta = res.Meta

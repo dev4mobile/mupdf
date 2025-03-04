@@ -131,7 +131,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 
 	case "application/zip":
 		slog.Warn("==>application/zip", "mimeType", mimeType)
-		// body, meta, err = ConvertZip(r)
+		body, meta, err = ConvertZip(r)
 
 	case "text/plain":
 		var b []byte
