@@ -21,16 +21,16 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 	// iterate files and extract text
 	for e := a.Entry(); e == nil; e = a.Entry() {
 		if data, err := a.ReadAll(); err == nil {
-			slog.Warn("1. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
+			slog.Warn("==>1. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
-				slog.Warn("2. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
+				slog.Warn("==>2. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
 				text += a.Name() + "\r\n" + res.Body + "\r\n"
 				meta = res.Meta
 			} else {
-				slog.Warn("3. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
+				slog.Warn("==>3. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
 			}
 		}
 	}
-	slog.Warn("4. convert zip", "text", text, "meta", meta)
+	slog.Warn("==>4. convert zip", "text", text, "meta", meta)
 	return text, meta, nil
 }
