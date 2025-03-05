@@ -20,7 +20,7 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 	var meta map[string]string
 	// iterate files and extract text
 	for e := a.Entry(); e == nil; e = a.Entry() {
-		if data, err := a.ReadAll(); err == nil {
+		if data, err := a.ReadAll(); err == nil && len(data) < 5 * 1024 * 1024 {
 			slog.Warn("==>1. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
 				slog.Warn("==>2. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
