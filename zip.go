@@ -19,8 +19,14 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 	var text string
 	var meta map[string]string
 	// iterate files and extract text
+	count := 0
 	for e := a.Entry(); e == nil; e = a.Entry() {
-		if data, err := a.ReadAll(); err == nil && len(data) < 5 * 1024 * 1024 {
+		if count > 10 {
+			slog.Warn("==>5. too many files", "count", count, "name", a.Name())
+			break
+		}
+		count++
+		if data, err := a.ReadAll(); err == nil && len(data) < 5*1024*1024 {
 			slog.Warn("==>1. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
 				slog.Warn("==>2. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
