@@ -142,7 +142,7 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 	default:
 		// auto-detection from first 512 bytes
 		b, _ := io.ReadAll(r)
-		if detect := http.DetectContentType(b); mimeType != detect {
+		if detect := http.DetectContentType(b); mimeType != detect && len(b) > 0 {
 			// recursive call convert once
 			slog.Warn("==>detect:", "mimeType", detect, "detectMimeType", mimeType, "size", len(b))
 			return Convert(bytes.NewReader(b), detect, readability)
@@ -152,7 +152,10 @@ func Convert(r io.Reader, mimeType string, readability bool) (*Response, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error converting data: %v", err)
 	}
-
+	slog.Warn("==>convert", "start", start, "end", time.Since(start), "body length", len(body), "meta length", len(meta), "error", err, "mimeType", mimeType)
+	if len(body) >= 1024*1024*10 {
+		slog.Warn("==>convert too large", "body length", len(body), "body", body, "meta", meta, "error", err, "mimeType", mimeType)
+	}
 	return &Response{
 		Body:  strings.TrimSpace(body),
 		Meta:  meta,

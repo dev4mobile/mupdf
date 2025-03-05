@@ -24,6 +24,9 @@ func ConvertZip(r io.Reader) (string, map[string]string, error) {
 			slog.Warn("==>1. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()))
 			if res, err := Convert(bytes.NewReader(data), MimeTypeByExtension(a.Name()), false); err == nil {
 				slog.Warn("==>2. convert zip", "name", a.Name(), "size", len(data), "mime", MimeTypeByExtension(a.Name()), "error", err)
+				if len(res.Body) <= 0 {
+					continue
+				}
 				text += a.Name() + "\r\n" + res.Body + "\r\n"
 				meta = res.Meta
 			} else {
